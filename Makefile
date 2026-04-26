@@ -1,4 +1,9 @@
-.PHONY: fmt vet lint vuln audit test
+.PHONY: build fmt vet lint vuln audit test
+
+build:
+	docker compose down
+	docker compose build --no-cache
+	docker compose up -d
 
 fmt:
 	go fmt ./...

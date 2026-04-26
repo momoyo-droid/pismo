@@ -11,7 +11,8 @@ import (
 )
 
 type AccountInterface interface {
-	CreateAccount(ctx context.Context, account *model.Account) error
+	CreateAccount(ctx context.Context, account *model.Account) (*model.Account, error)
+	GetAccountByID(ctx context.Context, accountID string) (*model.Account, error)
 }
 
 type AccountRepository struct {
@@ -23,21 +24,40 @@ func NewAccountRepository(db *gorm.DB, logger *zap.Logger) *AccountRepository {
 	return &AccountRepository{Storage: db, Logger: logger}
 }
 
-func (r *AccountRepository) CreateAccount(ctx context.Context, account *model.Account) error {
+func (r *AccountRepository) CreateAccount(ctx context.Context, account *model.Account) (*model.Account, error) {
 	r.Logger.Info("CreateAccount repository called")
 
 	var entityAccount entity.Account
 
 	if err := copier.Copy(&entityAccount, account); err != nil {
 		r.Logger.Error("Failed to copy account data", zap.Error(err))
-		return err
+		return nil, err
 	}
 
 	if err := r.Storage.Create(&entityAccount).Error; err != nil {
 		r.Logger.Error("Failed to create account in database", zap.Error(err))
-		return err
+		return nil, err
 	}
 
 	r.Logger.Info("Account created in database successfully")
-	return nil
+	return &model.Account{
+		ID:             entityAccount.ID,
+		DocumentNumber: entityAccount.DocumentNumber,
+	}, nil
+}
+
+func (r *AccountRepository) GetAccountByID(ctx context.Context, accountID string) (*model.Account, error) {
+	r.Logger.Info("GetAccountByID repository called")
+
+	var entityAccount entity.Account
+	if err := r.Storage.First(&entityAccount, "id = ?", accountID).Error; err != nil {
+		r.Logger.Error("Failed to fetch account from database", zap.Error(err))
+		return nil, err
+	}
+
+	r.Logger.Info("Account fetched from database successfully")
+	return &model.Account{
+		ID:             entityAccount.ID,
+		DocumentNumber: entityAccount.DocumentNumber,
+	}, nil
 }
