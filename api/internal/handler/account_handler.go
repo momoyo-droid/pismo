@@ -27,6 +27,11 @@ type accountRequest struct {
 	DocumentNumber string `json:"document_number" binding:"required"`
 }
 
+type accountResponse struct {
+	ID             uint   `json:"account_id"`
+	DocumentNumber string `json:"document_number"`
+}
+
 func (h *AccountHandler) CreateAccount(ctx *gin.Context) {
 	context := ctx.Request.Context()
 
@@ -46,7 +51,15 @@ func (h *AccountHandler) CreateAccount(ctx *gin.Context) {
 	}
 
 	h.Logger.Info("Start creating account")
-	err := h.AccountService.CreateAccount(context, &input)
+	account, err := h.AccountService.CreateAccount(context, &input)
+	var response accountResponse
+
+	if err := copier.Copy(&response, account); err != nil {
+		h.Logger.Error("Failed to copy account data", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
 	if err != nil {
 		h.Logger.Error("Failed to create account", zap.Error(err))
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create account"})
@@ -54,5 +67,31 @@ func (h *AccountHandler) CreateAccount(ctx *gin.Context) {
 	}
 
 	h.Logger.Info("Account created successfully")
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Account created successfully"})
+	ctx.JSON(http.StatusCreated, gin.H{"account": response})
+}
+
+func (h *AccountHandler) GetAccountByID(ctx *gin.Context) {
+	context := ctx.Request.Context()
+
+	accountID := ctx.Param("id")
+
+	h.Logger.Info("Start fetching account", zap.String("account_id", accountID))
+	account, err := h.AccountService.GetAccountByID(context, accountID)
+
+	if err != nil {
+		h.Logger.Error("Failed to fetch account", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch account"})
+		return
+	}
+
+	var response accountResponse
+
+	if err := copier.Copy(&response, account); err != nil {
+		h.Logger.Error("Failed to copy account data", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
+	}
+
+	h.Logger.Info("Account fetched successfully", zap.String("account_id", accountID))
+	ctx.JSON(http.StatusOK, gin.H{"account": response})
 }

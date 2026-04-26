@@ -48,6 +48,7 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 	router.POST("/accounts", handler.AccountHandler.CreateAccount)
+	router.GET("/accounts/:id", handler.AccountHandler.GetAccountByID)
 
 	mainLogger.Info("Starting API server...")
 	if err := router.Run(":" + cfg.Port); err != nil {
