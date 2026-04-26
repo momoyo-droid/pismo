@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: pismo_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: pismo
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: pismo
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: pismo_api
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
