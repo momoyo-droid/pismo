@@ -13,6 +13,4 @@ var (
 	ErrDBNameRequired     = errors.New("DBNAME environment variable is required")
 	ErrDBPortRequired     = errors.New("DBPORT environment variable is required")
 	ErrInvalidDBPort      = errors.New("invalid DBPORT value")
-	ErrSellerIDNotFound   = errors.New("seller not found")
-	ErrInvalidID          = errors.New("invalid ID parameter")
 )
