@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/momoyo-droid/pismo/api/internal/model"
@@ -113,6 +114,63 @@ func TestService_CreateTransaction_Success(t *testing.T) {
 
 }
 
+func TestService_CreateTransaction_Failure(t *testing.T) {
+	ctx := context.Background()
+
+	tests := []struct {
+		name          string
+		transaction   *model.Transaction
+		expectedError string
+	}{
+		{
+			name: "should fail when account does not exist",
+			transaction: &model.Transaction{
+				AccountID:       999,
+				OperationTypeID: 1,
+				Amount:          decimal.NewFromFloat(123.45),
+			},
+			expectedError: "account not found",
+		},
+		{
+			name: "should fail when operation type is invalid",
+			transaction: &model.Transaction{
+				AccountID:       1,
+				OperationTypeID: 999,
+				Amount:          decimal.NewFromFloat(123.45),
+			},
+			expectedError: "invalid operation type ID",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			accountRepo := &mocks.AccountRepositoryMock{
+				GetAccountByIDFunc: func(ctx context.Context, id uint64) (*model.Account, error) {
+					assert.Equal(t, tt.transaction.AccountID, id)
+					if tt.expectedError == "account not found" {
+						return nil, errors.New("account not found")
+					}
+					return &model.Account{
+						ID:             tt.transaction.AccountID,
+						DocumentNumber: "12345678900",
+					}, nil
+				},
+			}
+
+			logger, _ := zap.NewDevelopment()
+
+			service := service.NewService(accountRepo, nil, logger)
+
+			response, err := service.CreateTransaction(ctx, tt.transaction)
+
+			assert.Nil(t, response)
+			assert.EqualError(t, err, tt.expectedError)
+		})
+	}
+
+}
+
 func TestOperationType_Success(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -146,9 +204,4 @@ func TestOperationType_Success(t *testing.T) {
 			assert.Equal(t, tt.expected, tt.op.IsDebit())
 		})
 	}
-}
-
-func TestOperationType_Failure(t *testing.T) {
-	op := model.OperationType(999) // Invalid operation type
-	assert.False(t, op.IsValid())
 }
