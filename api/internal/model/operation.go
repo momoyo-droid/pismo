@@ -1,7 +1,5 @@
 package model
 
-import "github.com/shopspring/decimal"
-
 type OperationType int
 
 const (
@@ -25,10 +23,11 @@ func (o OperationType) IsValid() bool {
 	}
 }
 
-func (o OperationType) IsDebitOrCredit() decimal.Decimal{
+func (o OperationType) IsDebit() bool {
 	switch o {
-		case Purchase, InstallmentPurchase, Withdrawal: // Debit transactions
-			return decimal.NewFromInt(-1)
+	case Purchase, InstallmentPurchase, Withdrawal: // Debit transactions
+		return true
+	default:
+		return false // Credit transactions (Payment)
 	}
-	return decimal.NewFromInt(1) // Credit transactions
 }

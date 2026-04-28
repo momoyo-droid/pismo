@@ -5,17 +5,28 @@ import (
 	"errors"
 
 	"github.com/momoyo-droid/pismo/api/internal/model"
-	"github.com/momoyo-droid/pismo/api/internal/repository"
+	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 )
 
+//go:generate moq -out mocks/account_repository_mock.go -pkg mocks . AccountRepository
+type AccountRepository interface {
+	CreateAccount(ctx context.Context, account *model.Account) (*model.Account, error)
+	GetAccountByID(ctx context.Context, accountID uint64) (*model.Account, error)
+}
+
+//go:generate moq -out mocks/transaction_repository_mock.go -pkg mocks . TransactionRepository
+type TransactionRepository interface {
+	CreateTransaction(ctx context.Context, transaction *model.Transaction) (*model.Transaction, error)
+}
+
 type Service struct {
-	AccountRepo     *repository.AccountRepository
-	TransactionRepo *repository.TransactionRepository
+	AccountRepo     AccountRepository
+	TransactionRepo TransactionRepository
 	Logger          *zap.Logger
 }
 
-func NewService(accountRepo *repository.AccountRepository, transactionRepo *repository.TransactionRepository, logger *zap.Logger) *Service {
+func NewService(accountRepo AccountRepository, transactionRepo TransactionRepository, logger *zap.Logger) *Service {
 	return &Service{
 		AccountRepo:     accountRepo,
 		TransactionRepo: transactionRepo,
@@ -75,7 +86,14 @@ func (s *Service) CreateTransaction(ctx context.Context, transaction *model.Tran
 		return nil, errors.New("Invalid operation type ID")
 	}
 
-	transaction.Amount = transaction.Amount.Mul(op.IsDebitOrCredit())
+	if transaction.Amount.LessThanOrEqual(decimal.Zero) {
+		s.Logger.Error("Invalid transaction amount")
+		return nil, errors.New("Transaction amount must be greater than zero")
+	}
+
+	if op.IsDebit() {
+		transaction.Amount = transaction.Amount.Neg()
+	}
 
 	s.Logger.Info("Validation passed, creating transaction in repository")
 

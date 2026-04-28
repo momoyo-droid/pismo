@@ -9,11 +9,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type AccountInterface interface {
-	CreateAccount(ctx context.Context, account *model.Account) (*model.Account, error)
-	GetAccountByID(ctx context.Context, accountID uint64) (*model.Account, error)
-}
-
 type AccountRepository struct {
 	Storage *gorm.DB
 	Logger  *zap.Logger
