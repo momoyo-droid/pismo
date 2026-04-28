@@ -22,7 +22,12 @@ type Config struct {
 // LoadConfig loads the configuration values from environment variables and validates them.
 // It returns a Config struct and an error if any required configuration is missing or invalid.
 func LoadConfig() (*Config, error) {
-	err := godotenv.Load()
+	env := ".env"
+	if os.Getenv("APP_ENV") == "local" {
+		env = ".env.local"
+	}
+
+	err := godotenv.Load(env)
 	if err != nil {
 		return nil, err
 	}
