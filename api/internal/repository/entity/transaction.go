@@ -1,8 +1,17 @@
 package entity
 
-import "github.com/shopspring/decimal"
+import (
+	"time"
+
+	"github.com/shopspring/decimal"
+)
 
 type Transaction struct {
-	OperationType string          `gorm:"column:operation_type;not null"`
-	Amount        decimal.Decimal `gorm:"column:amount;not null"`
+	TransactionID   uint64          `gorm:"column:transaction_id;primaryKey;autoIncrement"`
+	AccountID       uint64          `gorm:"column:account_id;not null"`
+	Account         Account         `gorm:"foreignKey:AccountID;references:ID"`
+	OperationTypeID int             `gorm:"column:operation_type_id;not null"`
+	Operation       Operation       `gorm:"foreignKey:OperationTypeID;references:ID"`
+	Amount          decimal.Decimal `gorm:"column:amount;not null"`
+	CreationDate    time.Time       `gorm:"column:creation_date;not null"`
 }

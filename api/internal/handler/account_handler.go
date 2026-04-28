@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
@@ -75,8 +76,15 @@ func (h *AccountHandler) GetAccountByID(ctx *gin.Context) {
 
 	accountID := ctx.Param("id")
 
+	id, err := strconv.ParseUint(accountID, 10, 64)
+	if err != nil {
+		h.Logger.Error("Invalid account ID", zap.Error(err))
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account ID"})
+		return
+	}
+
 	h.Logger.Info("Start fetching account", zap.String("account_id", accountID))
-	account, err := h.AccountService.GetAccountByID(context, accountID)
+	account, err := h.AccountService.GetAccountByID(context, id)
 
 	if err != nil {
 		h.Logger.Error("Failed to fetch account", zap.Error(err))

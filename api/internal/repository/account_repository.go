@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 
-	"github.com/jinzhu/copier"
 	"github.com/momoyo-droid/pismo/api/internal/model"
 	"github.com/momoyo-droid/pismo/api/internal/repository/entity"
 	"go.uber.org/zap"
@@ -12,7 +11,7 @@ import (
 
 type AccountInterface interface {
 	CreateAccount(ctx context.Context, account *model.Account) (*model.Account, error)
-	GetAccountByID(ctx context.Context, accountID string) (*model.Account, error)
+	GetAccountByID(ctx context.Context, accountID uint64) (*model.Account, error)
 }
 
 type AccountRepository struct {
@@ -29,9 +28,8 @@ func (r *AccountRepository) CreateAccount(ctx context.Context, account *model.Ac
 
 	var entityAccount entity.Account
 
-	if err := copier.Copy(&entityAccount, account); err != nil {
-		r.Logger.Error("Failed to copy account data", zap.Error(err))
-		return nil, err
+	entityAccount = entity.Account{
+		DocumentNumber: account.DocumentNumber,
 	}
 
 	if err := r.Storage.Create(&entityAccount).Error; err != nil {
@@ -46,7 +44,7 @@ func (r *AccountRepository) CreateAccount(ctx context.Context, account *model.Ac
 	}, nil
 }
 
-func (r *AccountRepository) GetAccountByID(ctx context.Context, accountID string) (*model.Account, error) {
+func (r *AccountRepository) GetAccountByID(ctx context.Context, accountID uint64) (*model.Account, error) {
 	r.Logger.Info("GetAccountByID repository called")
 
 	var entityAccount entity.Account

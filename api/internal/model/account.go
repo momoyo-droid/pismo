@@ -1,6 +1,6 @@
 package model
 
 type Account struct {
-	ID             uint
+	ID             uint64
 	DocumentNumber string
 }

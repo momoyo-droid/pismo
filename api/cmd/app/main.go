@@ -49,6 +49,7 @@ func main() {
 	})
 	router.POST("/accounts", handler.AccountHandler.CreateAccount)
 	router.GET("/accounts/:id", handler.AccountHandler.GetAccountByID)
+	router.POST("/transactions", handler.TransactionHandler.CreateTransaction)
 
 	mainLogger.Info("Starting API server...")
 	if err := router.Run(":" + cfg.Port); err != nil {

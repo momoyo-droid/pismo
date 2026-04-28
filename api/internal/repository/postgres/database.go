@@ -22,9 +22,29 @@ func NewDatabaseConnection(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("create database connection error: %w", err)
 	}
 	// Create tables if they do not exist
-	if err := db.AutoMigrate(&entity.Account{}, &entity.Transaction{}); err != nil {
+	if err := db.AutoMigrate(&entity.Account{}, &entity.Transaction{}, &entity.Operation{}); err != nil {
 		return nil, fmt.Errorf("auto-migrate error: %w", err)
 	}
 
+	if err := createOperations(db); err != nil {
+		return nil, fmt.Errorf("failed to create operations: %w", err)
+	}
+
 	return db, nil
+}
+
+func createOperations(db *gorm.DB) error {
+	ops := []entity.Operation{
+		{ID: 1, Description: "Purchase"},
+		{ID: 2, Description: "Withdrawal"},
+		{ID: 3, Description: "Installmente Purchase"},
+		{ID: 4, Description: "Payment"},
+	}
+
+	for _, op := range ops {
+		if err := db.FirstOrCreate(&op, entity.Operation{ID: op.ID}).Error; err != nil {
+			return fmt.Errorf("failed to create operation %d: %w", op.ID, err)
+		}
+	}
+	return nil
 }
