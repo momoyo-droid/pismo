@@ -10,10 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type TransactionInterface interface {
-	CreateTransaction(ctx context.Context, transaction *model.Transaction) (*model.Transaction, error)
-}
-
 type TransactionRepository struct {
 	Storage *gorm.DB
 	Logger  *zap.Logger
