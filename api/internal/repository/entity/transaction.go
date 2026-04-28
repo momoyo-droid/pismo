@@ -6,6 +6,8 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// Transaction represents a financial transaction with an ID,
+// associated AccountID, OperationTypeID, and Amount.
 type Transaction struct {
 	TransactionID   uint64          `gorm:"column:transaction_id;primaryKey;autoIncrement"`
 	AccountID       uint64          `gorm:"column:account_id;not null"`

@@ -9,6 +9,9 @@ import (
 	"github.com/momoyo-droid/pismo/api/internal/repository"
 	"github.com/momoyo-droid/pismo/api/internal/repository/postgres"
 	"github.com/momoyo-droid/pismo/api/internal/service"
+	_ "github.com/momoyo-droid/pismo/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 )
 
@@ -18,6 +21,11 @@ func logger() *zap.Logger {
 	return logger
 }
 
+// @title Pismo API
+// @version 1.0
+// @description API for account and transaction management
+// @host localhost:3000
+// @BasePath /
 func main() {
 
 	mainLogger := logger()
@@ -50,6 +58,7 @@ func main() {
 	router.POST("/accounts", handler.AccountHandler.CreateAccount)
 	router.GET("/accounts/:id", handler.AccountHandler.GetAccountByID)
 	router.POST("/transactions", handler.TransactionHandler.CreateTransaction)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	mainLogger.Info("Starting API server...")
 	if err := router.Run(":" + cfg.Port); err != nil {
