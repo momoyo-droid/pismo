@@ -1,4 +1,7 @@
-.PHONY: build fmt vet lint vuln audit test
+.PHONY: swagger build fmt vet lint vuln audit test
+
+swagger:
+	swag init -g api/cmd/app/main.go
 
 build:
 	docker compose down

@@ -33,6 +33,9 @@ func NewDatabaseConnection(cfg *config.Config) (*gorm.DB, error) {
 	return db, nil
 }
 
+// createOperations inserts predefined financial operations into the database if they do not already exist.
+// It defines a list of operations (Purchase, Withdrawal, Installment Purchase, Payment) and uses
+// the FirstOrCreate method to ensure that each operation is only created once in the database.
 func createOperations(db *gorm.DB) error {
 	ops := []entity.Operation{
 		{ID: 1, Description: "Purchase"},
