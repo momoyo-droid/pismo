@@ -135,12 +135,14 @@ make audit
 ```text
 api/
 ├── cmd/
+    ├── app/
 ├── internal/
+|   ├── config/
 │   ├── handler/
 │   ├── model/
 │   ├── repository/
 │   ├── service/
-│   └── response/
+│   └── utils/
 ├── docs/
 ```
 
